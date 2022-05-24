@@ -4,10 +4,11 @@ import 'dart:typed_data';
 import 'package:bc_ur/src/jsport.dart';
 import 'package:crclib/catalog.dart';
 import 'package:crypto/crypto.dart';
+
 // import 'utils'shajs from 'sha.js';
 // import 'utils'{ crc32 } from 'crc';
 
-List<int> sha256Hash (List<int> data) => sha256.convert(data).bytes;
+List<int> sha256Hash(List<int> data) => sha256.convert(data).bytes;
 
 List<String> partition(String s, int n) {
   // TODO: implement partition
@@ -18,27 +19,29 @@ List<String> partition(String s, int n) {
   return matches.map((e) => e.group(0) ?? s).toList();
 }
 
-List<List<int>> split(List<int> s, int length) => [s.sublist(0, s.length - length), s.sublist(s.length - length, s.length)];
+List<List<int>> split(List<int> s, int length) =>
+    [s.sublist(0, s.length - length), s.sublist(s.length - length, s.length)];
 
-// export 'utils'const getCRC = (message: Buffer): number => crc32(message);
+BigInt getCRC(List<int> message) => Crc32Xz().convert(message).toBigInt(); //crc32(message);
 
 var crc = Crc32Xz();
 
-String getCRCHex(List<int> message) => crc.convert(message).toRadixString(16).padLeft(8, '0'); //.toString(16).padStart(8, '0');
+String getCRCHex(List<int> message) =>
+    crc.convert(message).toRadixString(16).padLeft(8, '0'); //.toString(16).padStart(8, '0');
 
-// export 'utils'const toUint32 = (number: number): number => number >>> 0;
+int toUint32(int number) => number >>> 0;
 
-// export 'utils'const intToBytes = (num: number): Buffer => {
-//   const arr = new ArrayBuffer(4); // an Int32 takes 4 bytes
-//   const view = new DataView(arr);
+List<int> intToBytes(int number) {
+  var arr = Uint8List(4); // an Int32 takes 4 bytes
+  var view = ByteData.sublistView(arr);
 
-//   view.setUint32(0, num, false); // byteOffset = 0; litteEndian = false
+  view.setUint32(0, number, Endian.big); // byteOffset = 0; litteEndian = false
 
-//   return Buffer.from(arr);
-// }
+  return arr.toList();
+}
 
-bool isURType (String type)  {
-  return type.split('').every((item)  {
+bool isURType(String type) {
+  return type.split('').every((item) {
     var c = item.codeUnitAt(0);
 
     if ('a'.codeUnitAt(0) <= c && c <= 'z'.codeUnitAt(0)) return true;
