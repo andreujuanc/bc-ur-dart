@@ -1,6 +1,6 @@
-import 'package:bc_ur/src/bytewords.dart';
-import 'package:convert/convert.dart';
+import 'package:bc_ur/src/jsport.dart';
 import 'package:test/test.dart';
+import 'package:bc_ur/src/bytewords.dart';
 
 void main() {
   const hexInput = 'd9012ca20150c7098580125e2ab0981253468b2dbc5202d8641947da';
@@ -110,21 +110,19 @@ void main() {
     test('Bytewords:Encode:Standard', () {
       expect(Bytewords.encode(hexInput, BYTEWORD_STYLES.STANDARD),
           'tuna acid draw oboe acid good slot axis limp lava brag holy door puff monk brag guru frog luau drop roof grim also trip idle chef fuel twin tied draw grim ramp');
-      expect(
-          Bytewords.encode(hex.encode(bufferInput), BYTEWORD_STYLES.STANDARD),
+      expect(Bytewords.encode(bufferInput.toHexString(), BYTEWORD_STYLES.STANDARD),
           'yank toys bulb skew when warm free fair tent swan open brag mint noon jury list view tiny brew note body data webs what zinc bald join runs data whiz days keys user diet news ruby whiz zone menu surf flew omit trip pose runs fund part even crux fern math visa tied loud redo silk curl jugs hard beta next cost puma drum acid junk swan free very mint flap warm fact math flap what limp free jugs yell fish epic whiz open numb math city belt glow wave limp fuel grim free zone open love diet gyro cats fizz holy city puff');
     });
     test('Bytewords:Encode:URI', () {
       expect(Bytewords.encode(hexInput, BYTEWORD_STYLES.URI),
           'tuna-acid-draw-oboe-acid-good-slot-axis-limp-lava-brag-holy-door-puff-monk-brag-guru-frog-luau-drop-roof-grim-also-trip-idle-chef-fuel-twin-tied-draw-grim-ramp');
-      expect(Bytewords.encode(hex.encode(bufferInput), BYTEWORD_STYLES.URI),
+      expect(Bytewords.encode(bufferInput.toHexString(), BYTEWORD_STYLES.URI),
           'yank-toys-bulb-skew-when-warm-free-fair-tent-swan-open-brag-mint-noon-jury-list-view-tiny-brew-note-body-data-webs-what-zinc-bald-join-runs-data-whiz-days-keys-user-diet-news-ruby-whiz-zone-menu-surf-flew-omit-trip-pose-runs-fund-part-even-crux-fern-math-visa-tied-loud-redo-silk-curl-jugs-hard-beta-next-cost-puma-drum-acid-junk-swan-free-very-mint-flap-warm-fact-math-flap-what-limp-free-jugs-yell-fish-epic-whiz-open-numb-math-city-belt-glow-wave-limp-fuel-grim-free-zone-open-love-diet-gyro-cats-fizz-holy-city-puff');
     });
     test('Bytewords:Encode:Minimal', () {
       expect(Bytewords.encode(hexInput, BYTEWORD_STYLES.MINIMAL),
           'taaddwoeadgdstaslplabghydrpfmkbggufgludprfgmaotpiecffltntddwgmrp');
-      expect(
-          Bytewords.encode(hex.encode(bufferInput), BYTEWORD_STYLES.MINIMAL),
+      expect(Bytewords.encode(bufferInput.toHexString(), BYTEWORD_STYLES.MINIMAL),
           'yktsbbswwnwmfefrttsnonbgmtnnjyltvwtybwnebydawswtzcbdjnrsdawzdsksurdtnsrywzzemusffwottppersfdptencxfnmhvatdldroskcljshdbantctpadmadjksnfevymtfpwmftmhfpwtlpfejsylfhecwzonnbmhcybtgwwelpflgmfezeonledtgocsfzhycypf');
     });
   });
@@ -141,7 +139,7 @@ void main() {
           Bytewords.decode(
               'yank toys bulb skew when warm free fair tent swan open brag mint noon jury list view tiny brew note body data webs what zinc bald join runs data whiz days keys user diet news ruby whiz zone menu surf flew omit trip pose runs fund part even crux fern math visa tied loud redo silk curl jugs hard beta next cost puma drum acid junk swan free very mint flap warm fact math flap what limp free jugs yell fish epic whiz open numb math city belt glow wave limp fuel grim free zone open love diet gyro cats fizz holy city puff',
               BYTEWORD_STYLES.STANDARD),
-          hex.encode(bufferInput));
+          bufferInput.toHexString());
     });
     test('Bytewords:Decode:URI', () {
       expect(
@@ -153,47 +151,36 @@ void main() {
           Bytewords.decode(
               'yank-toys-bulb-skew-when-warm-free-fair-tent-swan-open-brag-mint-noon-jury-list-view-tiny-brew-note-body-data-webs-what-zinc-bald-join-runs-data-whiz-days-keys-user-diet-news-ruby-whiz-zone-menu-surf-flew-omit-trip-pose-runs-fund-part-even-crux-fern-math-visa-tied-loud-redo-silk-curl-jugs-hard-beta-next-cost-puma-drum-acid-junk-swan-free-very-mint-flap-warm-fact-math-flap-what-limp-free-jugs-yell-fish-epic-whiz-open-numb-math-city-belt-glow-wave-limp-fuel-grim-free-zone-open-love-diet-gyro-cats-fizz-holy-city-puff',
               BYTEWORD_STYLES.URI),
-          hex.encode(bufferInput));
+          bufferInput.toHexString());
     });
     test('Bytewords:Decode:Minimal', () {
       expect(
-          Bytewords.decode(
-              'taaddwoeadgdstaslplabghydrpfmkbggufgludprfgmaotpiecffltntddwgmrp',
-              BYTEWORD_STYLES.MINIMAL),
+          Bytewords.decode('taaddwoeadgdstaslplabghydrpfmkbggufgludprfgmaotpiecffltntddwgmrp', BYTEWORD_STYLES.MINIMAL),
           hexInput);
       expect(
           Bytewords.decode(
               'yktsbbswwnwmfefrttsnonbgmtnnjyltvwtybwnebydawswtzcbdjnrsdawzdsksurdtnsrywzzemusffwottppersfdptencxfnmhvatdldroskcljshdbantctpadmadjksnfevymtfpwmftmhfpwtlpfejsylfhecwzonnbmhcybtgwwelpflgmfezeonledtgocsfzhycypf',
               BYTEWORD_STYLES.MINIMAL),
-          hex.encode(bufferInput));
+          bufferInput.toHexString());
     });
 
     test('Bytewords:Decode:Invalid checksums', () {
       //expect.assertions(3);
-      expect(
-          () => Bytewords.decode('able acid also lava zero jade need echo wolf',
-              BYTEWORD_STYLES.STANDARD),
+      expect(() => Bytewords.decode('able acid also lava zero jade need echo wolf', BYTEWORD_STYLES.STANDARD),
           throwsA(isA<AssertionError>()));
 
-      expect(
-          () => Bytewords.decode('able-acid-also-lava-zero-jade-need-echo-wolf',
-              BYTEWORD_STYLES.URI),
+      expect(() => Bytewords.decode('able-acid-also-lava-zero-jade-need-echo-wolf', BYTEWORD_STYLES.URI),
           throwsA(isA<AssertionError>()));
 
-      expect(
-          () =>
-              Bytewords.decode('aeadaolazojendeowf', BYTEWORD_STYLES.MINIMAL),
-          throwsA(isA<AssertionError>()));
+      expect(() => Bytewords.decode('aeadaolazojendeowf', BYTEWORD_STYLES.MINIMAL), throwsA(isA<AssertionError>()));
     });
 
     test('Bytewords:Decode:Too short', () {
       //expect.assertions(2);
 
-      expect(() => Bytewords.decode('wolf', BYTEWORD_STYLES.STANDARD),
-          throwsA(isA<AssertionError>()));
+      expect(() => Bytewords.decode('wolf', BYTEWORD_STYLES.STANDARD), throwsA(isA<AssertionError>()));
 
-      expect(() => Bytewords.decode('', BYTEWORD_STYLES.STANDARD),
-          throwsA(isA<AssertionError>()));
+      expect(() => Bytewords.decode('', BYTEWORD_STYLES.STANDARD), throwsA(isA<AssertionError>()));
     });
   });
 }
