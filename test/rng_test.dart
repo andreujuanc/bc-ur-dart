@@ -234,13 +234,13 @@ void main() {
       expect(numbers, expectedNumbers);
     });
 
-    // test('3', () {
-    //   var rng = Xoshiro(Buffer.from('Wolf', "utf-8"));
-    //   var numbers = List<int>.generate(100, (index) => 0).map(() => rng.nextInt(1, 10))
-    //   var expectedNumbers = [6, 5, 8, 4, 10, 5, 7, 10, 4, 9, 10, 9, 7, 7, 1, 1, 2, 9, 9, 2, 6, 4, 5, 7, 8, 5, 4, 2, 3, 8, 7, 4, 5, 1, 10, 9, 3, 10, 2, 6, 8, 5, 7, 9, 3, 1, 5, 2, 7, 1, 4, 4, 4, 4, 9, 4, 5, 5, 6, 9, 5, 1, 2, 8, 3, 3, 2, 8, 4, 3, 2, 1, 10, 8, 9, 3, 10, 8, 5, 5, 6, 7, 10, 5, 8, 9, 4, 6, 4, 2, 10, 2, 1, 7, 9, 6, 7, 4, 2, 5]
+    test('3', () {
+      var rng = Xoshiro(Buffer.from('Wolf', "utf-8"));
+      var numbers = List<int>.generate(100, (index) => rng.nextInt(1, 10));
+      var expectedNumbers = [6, 5, 8, 4, 10, 5, 7, 10, 4, 9, 10, 9, 7, 7, 1, 1, 2, 9, 9, 2, 6, 4, 5, 7, 8, 5, 4, 2, 3, 8, 7, 4, 5, 1, 10, 9, 3, 10, 2, 6, 8, 5, 7, 9, 3, 1, 5, 2, 7, 1, 4, 4, 4, 4, 9, 4, 5, 5, 6, 9, 5, 1, 2, 8, 3, 3, 2, 8, 4, 3, 2, 1, 10, 8, 9, 3, 10, 8, 5, 5, 6, 7, 10, 5, 8, 9, 4, 6, 4, 2, 10, 2, 1, 7, 9, 6, 7, 4, 2, 5];
 
-    //   expect(numbers, expectedNumbers);
-    // });
+      expect(numbers, expectedNumbers);
+    });
   });
 
 // describe('Shuffle', () {

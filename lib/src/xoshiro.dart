@@ -5,7 +5,8 @@ import 'package:decimal/decimal.dart';
 // import BigNumber from 'bignumber.js'
 // import JSBI from 'jsbi'
 
-// const MAX_UINT64 = 0xFFFFFFFFFFFFFFFF;
+const MAX_UINT64 = '0xFFFFFFFFFFFFFFFF';
+
 BigInt _rotl(BigInt x, int k) => ((x << k).toUnsigned(64) ^
     //JSBI.signedRightShift(x, BigInt.from(64) - BigInt.from(k)).toUnsigned(64)
     (x >> 64 - k).toUnsigned(64));
@@ -38,7 +39,6 @@ class Xoshiro {
   }
 
   BigInt _roll() {
-
     var r = _rotl((s[1] * BigInt.from(5)).toUnsigned(64), 7);
     var result = (r * BigInt.from(9)).toUnsigned(64);
 
@@ -60,13 +60,16 @@ class Xoshiro {
     return Decimal.parse(_roll().toString());
   }
 
-  // nextDouble = (): BigNumber => {
-  //   return new BigNumber(this.roll().toString()).div(MAX_UINT64 + 1)
-  // }
+  Decimal nextDouble() {
+    var d = Decimal.fromBigInt(BigInt.parse(MAX_UINT64) + BigInt.from(1));
+    var result = Decimal.parse(_roll().toString()) / d;
+    return result.toDecimal();
+  }
 
-  // nextInt = (low: number, high: number): number => {
-  //   return Math.floor((this.nextDouble().toNumber() * (high - low + 1)) + low);
-  // }
+  int nextInt(int low, int high) {
+    // return Math.floor((this.nextDouble().toNumber() * (high - low + 1)) + low);
+    return ((nextDouble() * Decimal.fromInt(high - low + 1)) + Decimal.fromInt(low)).floor().toBigInt().toInt();
+  }
 
   // nextByte = () => this.nextInt(0, 255);
 
