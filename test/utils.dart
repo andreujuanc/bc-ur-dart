@@ -37,7 +37,7 @@ List<int> makeMessage(int length, String? seed) {
   var seedData = sha256.convert(Buffer.from(seed, 'utf-8')).bytes;
   var rng = Xoshiro(seedData);
 
-  return {} as dynamic;//List.generate(length, (index) => rng.nextInt(255));
+  return List.generate(length, (index) => rng.nextInt(0, 255));
 }
 
 UR makeMessageUR(int length, String? seed) {

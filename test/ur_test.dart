@@ -6,19 +6,18 @@ import 'utils.dart';
 
 void main() {
   group('UR', () {
-    // test('encode/decode single part ur', () {
-    //   // var message = makeMessageUR(50, null);
-    //   // var encoded = UREncoder.encodeSinglePart(message);
-    //   // var expected =
-    //   //     "ur:bytes/hdeymejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtgwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsdwkbrkch"; // original random was too hard to replicate
-    //   //    // "ur:bytes/mkeycsdpcsdscsdmaxcsehcsdkcsdkbscsckbyasatbbcsdwaeaecscpcscpcsdmbsadcmbzbtcsdwcscwcsctcsdmaxbacsdnbbcsdmadaxcsdtaebscsdkatadaxbdaabybacsdscscxcsdtbyndgdndld";
+    test('encode/decode single part ur', () {
+      var message = makeMessageUR(50, null);
+      var encoded = UREncoder.encodeSinglePart(message);
+      var expected =
+          "ur:bytes/hdeymejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtgwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsdwkbrkch";
 
-    //   // expect(encoded, expected);
+      expect(encoded, expected);
 
-    //   //var decoded = URDecoder.decode(encoded);
+      //var decoded = URDecoder.decode(encoded);
 
-    //   // expect(decoded.equals(message)).toBe(true);
-    // });
+      // expect(decoded.equals(message)).toBe(true);
+    });
 
     // test('encode/decode multi part ur', () {
     //   var message = makeMessageUR(32767);
