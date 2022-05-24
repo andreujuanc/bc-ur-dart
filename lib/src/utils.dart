@@ -1,11 +1,13 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:bc_ur/src/jsport.dart';
 import 'package:crclib/catalog.dart';
+import 'package:crypto/crypto.dart';
 // import 'utils'shajs from 'sha.js';
 // import 'utils'{ crc32 } from 'crc';
 
-// export 'utils'const sha256Hash = (data: Buffer | string) => shajs('sha256').update(data).digest();
+List<int> sha256Hash (List<int> data) => sha256.convert(data).bytes;
 
 List<String> partition(String s, int n) {
   // TODO: implement partition
@@ -35,16 +37,16 @@ String getCRCHex(List<int> message) => crc.convert(message).toRadixString(16).pa
 //   return Buffer.from(arr);
 // }
 
-// export 'utils'const isURType = (type: string): boolean => {
-//   return type.split('').every((_, index) => {
-//     let c = type.charCodeAt(index);
+bool isURType (String type)  {
+  return type.split('').every((item)  {
+    var c = item.codeUnitAt(0);
 
-//     if ('a'.charCodeAt(0) <= c && c <= 'z'.charCodeAt(0)) return true;
-//     if ('0'.charCodeAt(0) <= c && c <= '9'.charCodeAt(0)) return true;
-//     if (c === '-'.charCodeAt(0)) return true;
-//     return false;
-//   })
-// }
+    if ('a'.codeUnitAt(0) <= c && c <= 'z'.codeUnitAt(0)) return true;
+    if ('0'.codeUnitAt(0) <= c && c <= '9'.codeUnitAt(0)) return true;
+    if (c == '-'.codeUnitAt(0)) return true;
+    return false;
+  });
+}
 
 // export 'utils'const hasPrefix = (s: string, prefix: string): boolean => s.indexOf(prefix) === 0;
 
