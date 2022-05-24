@@ -1,20 +1,14 @@
+import 'package:bc_ur/src/utils.dart';
+import 'package:decimal/decimal.dart';
+
 // import { sha256Hash } from "./utils";
 // import BigNumber from 'bignumber.js'
 // import JSBI from 'jsbi'
 
 // const MAX_UINT64 = 0xFFFFFFFFFFFFFFFF;
-// const rotl = (x: JSBI, k: number): JSBI => JSBI.bitwiseXor(
-//   JSBI.asUintN(64, JSBI.leftShift(x, JSBI.BigInt(k))),
-//   JSBI.BigInt(
-//     JSBI.asUintN(
-//       64,
-//       JSBI.signedRightShift(x, (JSBI.subtract(JSBI.BigInt(64), JSBI.BigInt(k))))
-//     )
-//   )
-// );
-
-import 'package:bc_ur/src/utils.dart';
-import 'package:decimal/decimal.dart';
+BigInt _rotl(BigInt x, int k) => ((x << k).toUnsigned(64) ^
+    //JSBI.signedRightShift(x, BigInt.from(64) - BigInt.from(k)).toUnsigned(64)
+    (x >> 64 - k).toUnsigned(64));
 
 class Xoshiro {
   late List<BigInt> s;
@@ -24,7 +18,6 @@ class Xoshiro {
 
     s = [BigInt.zero, BigInt.zero, BigInt.zero, BigInt.zero];
     _setS(digest);
-    print(s);
   }
 
   _setS(List<int> digest) {
@@ -32,6 +25,7 @@ class Xoshiro {
       var o = i * 8;
       var v = BigInt.zero;
       for (var n = 0; n < 8; n++) {
+        // TODO: Cleanup and refactor as original
         v = (v << 8).toUnsigned(64);
         var d = BigInt.from(digest[o + n]);
         var or = (v | d);
@@ -43,34 +37,27 @@ class Xoshiro {
     }
   }
 
-  // private roll(): JSBI {
-  //   const result = JSBI.asUintN(
-  //     64,
-  //     JSBI.multiply(
-  //       rotl(
-  //         JSBI.asUintN(64, JSBI.multiply(this.s[1], JSBI.BigInt(5))),
-  //         7
-  //       ),
-  //       JSBI.BigInt(9)
-  //     )
-  //   );
+  BigInt _roll() {
 
-  //   const t = JSBI.asUintN(64, JSBI.leftShift(this.s[1], JSBI.BigInt(17)));
+    var r = _rotl((s[1] * BigInt.from(5)).toUnsigned(64), 7);
+    var result = (r * BigInt.from(9)).toUnsigned(64);
 
-  //   this.s[2] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[2], JSBI.BigInt(this.s[0])));
-  //   this.s[3] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[3], JSBI.BigInt(this.s[1])));
-  //   this.s[1] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[1], JSBI.BigInt(this.s[2])));
-  //   this.s[0] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[0], JSBI.BigInt(this.s[3])));
+    var t = (s[1] << 17).toUnsigned(64);
 
-  //   this.s[2] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[2], JSBI.BigInt(t)));
+    s[2] = (s[2] ^ s[0]).toUnsigned(64);
+    s[3] = (s[3] ^ s[1]).toUnsigned(64);
+    s[1] = (s[1] ^ s[2]).toUnsigned(64);
+    s[0] = (s[0] ^ s[3]).toUnsigned(64);
 
-  //   this.s[3] = JSBI.asUintN(64, rotl(this.s[3], 45));
+    s[2] = (s[2] ^ t).toUnsigned(64);
 
-  //   return result;
-  // }
+    s[3] = _rotl(s[3], 45).toUnsigned(64);
+
+    return result;
+  }
 
   Decimal next() {
-    return {} as dynamic; //Decimal.parse(this.roll().toString());
+    return Decimal.parse(_roll().toString());
   }
 
   // nextDouble = (): BigNumber => {
