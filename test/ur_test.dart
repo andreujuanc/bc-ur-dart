@@ -14,9 +14,9 @@ void main() {
 
       expect(encoded, expected);
 
-      //var decoded = URDecoder.decode(encoded);
+      var decoded = URDecoder.decode(encoded);
 
-      // expect(decoded.equals(message)).toBe(true);
+      expect(decoded.equals(message), true);
     });
 
     // test('encode/decode multi part ur', () {

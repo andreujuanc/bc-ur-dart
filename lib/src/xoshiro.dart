@@ -71,9 +71,10 @@ class Xoshiro {
     return ((nextDouble() * Decimal.fromInt(high - low + 1)) + Decimal.fromInt(low)).floor().toBigInt().toInt();
   }
 
-  // nextByte = () => this.nextInt(0, 255);
+  int nextByte  () => nextInt(0, 255);
 
-  // nextData = (count: number) => (
-  //   [...new Array(count)].map(() => this.nextByte())
-  // )
+  List<int> nextData (int count) => (
+    //[...new Array(count)].map(() => this.nextByte())
+    List<int>.generate(count, (_) => nextByte())
+  );
 }

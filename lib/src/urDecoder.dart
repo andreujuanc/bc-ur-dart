@@ -6,7 +6,9 @@
 // import UR from './ur';
 // import { FountainEncoderPart } from './fountainEncoder';
 
+import 'package:bc_ur/src/bytewords.dart';
 import 'package:bc_ur/src/fountainDecoder.dart';
+import 'package:bc_ur/src/jsport.dart';
 import 'package:bc_ur/src/ur.dart';
 import 'package:bc_ur/src/utils.dart';
 
@@ -25,11 +27,11 @@ class URDecoder {
     expected_type = '';
   }
 
-  // private static decodeBody(type: string, message: string): UR {
-  //   const cbor = bytewords.decode(message, bytewords.STYLES.MINIMAL);
+  static UR decodeBody(String type, String message) {
+    final cbor = Bytewords.decode(message, BYTEWORD_STYLES.MINIMAL);
 
-  //   return new UR(Buffer.from(cbor, 'hex'), type);
-  // }
+    return UR(Buffer.from(cbor, 'hex'), type);
+  }
 
   // private validatePart(type: string): boolean {
   //   if (this.expected_type) {
@@ -47,38 +49,40 @@ class URDecoder {
 
   static UR decode(String message) {
     // const [type, components] = this.parse(message);
+    final parsed = parse(message);
+    final type = parsed[0] as String;
+    final components = parsed[1] as List<String>;
+    if (components.isEmpty) {
+      throw 'InvalidPathLengthError';
+    }
 
-    // if (components.length === 0) {
-    //   throw new InvalidPathLengthError();
-    // }
+    final body = components[0];
 
-    // const body = components[0];
-
-    // return URDecoder.decodeBody(type, body);
-    return {} as dynamic;
+    return URDecoder.decodeBody(type, body);
   }
 
-  // public static parse(message: string): [string, string[]] {
-  //   const lowercase = message.toLowerCase();
-  //   const prefix = lowercase.slice(0, 3);
+  /** @returns [string, string[]] */
+  static List parse(String message)  {
+    final lowercase = message.toLowerCase();
+    final prefix = lowercase.substring(0, 3);
 
-  //   if (prefix !== 'ur:') {
-  //     throw new InvalidSchemeError();
-  //   }
+    if (prefix != 'ur:') {
+      throw 'InvalidSchemeError';
+    }
 
-  //   const components = lowercase.slice(3).split('/')
-  //   const type = components[0];
+    final components = lowercase.substring(3).split('/');
+    final type = components[0];
 
-  //   if (components.length < 2) {
-  //     throw new InvalidPathLengthError();
-  //   }
+    if (components.length < 2) {
+      throw 'InvalidPathLengthError';
+    }
 
-  //   if (!isURType(type)) {
-  //     throw new InvalidTypeError();
-  //   }
+    if (!isURType(type)) {
+      throw 'InvalidTypeError';
+    }
 
-  //   return [type, components.slice(1)]
-  // }
+    return [type, components.sublist(1)];
+  }
 
   // public static parseSequenceComponent(s: string) {
   //   const components = s.split('-');

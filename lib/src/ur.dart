@@ -4,6 +4,7 @@
 
 import 'package:bc_ur/src/errors.dart';
 import 'package:bc_ur/src/utils.dart';
+import 'package:collection/collection.dart';
 
 class UR {
   List<int> _cborPayload;
@@ -31,7 +32,8 @@ class UR {
   String get type => _type;
   List<int> get cbor => _cborPayload;
 
-  // public equals(ur2: UR) {
-  //   return this.type === ur2.type && this.cbor.equals(ur2.cbor);
-  // }
+  Function eqList = const ListEquality().equals;
+  bool equals(UR ur2) {
+    return type == ur2.type && eqList(cbor, ur2.cbor);
+  }
 }
