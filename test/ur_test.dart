@@ -19,26 +19,25 @@ void main() {
       expect(decoded.equals(message), true);
     });
 
-    // test('encode/decode multi part ur', () {
-    //   var message = makeMessageUR(32767);
-    //   var maxFragmentLength = 1000;
-    //   var firstSeqNum = 100;
-    //   var encoder = new UREncoder(message, maxFragmentLength, firstSeqNum);
-    //   var decoder = new URDecoder();
+    test('encode/decode multi part ur', () {
+      var message = makeMessageUR(32767, null);
+      var maxFragmentLength = 1000;
+      var firstSeqNum = 100;
+      var encoder = UREncoder(message, maxFragmentLength: maxFragmentLength, firstSeqNum: firstSeqNum);
+      var decoder = URDecoder(null, null);
 
-    //   do {
-    //     var part = encoder.nextPart();
-    //     decoder.receivePart(part);
-    //   } while (!decoder.isComplete());
+      do {
+        var part = encoder.nextPart();
+        decoder.receivePart(part);
+      } while (!decoder.isComplete());
 
-    //   if (decoder.isSuccess()) {
-    //     expect(decoder.resultUR().equals(message)).toBe(true);
-    //   }
-    //   else {
-    //     console.log('decoder.resultError()', decoder.resultError());
-    //     expect(false);
-    //   }
-    // });
+      if (decoder.isSuccess()) {
+        expect(decoder.resultUR().equals(message), true);
+      } else {
+        print('decoder.resultError()${decoder.resultError()}');
+        expect(false, true);
+      }
+    });
 
     // group('UR Encoder', () {
     //   test('encoder test', () {

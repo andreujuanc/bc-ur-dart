@@ -3,17 +3,27 @@
 // import { chooseFragments } from "./fountainUtils";
 // import { cborEncode, cborDecode } from './cbor';
 
+import 'dart:typed_data';
+
+import 'package:bc_ur/src/cbor.dart';
+import 'package:bc_ur/src/fountainUtils.dart';
 import 'package:bc_ur/src/jsport.dart';
 import 'package:bc_ur/src/utils.dart';
 
 class FountainEncoderPart {
-//   constructor(
-//     private _seqNum: number,
-//     private _seqLength: number,
-//     private _messageLength: number,
-//     private _checksum: number,
-//     private _fragment: Buffer,
-//   ) { }
+  int seqNum;
+  int seqLength;
+  int messageLength;
+  BigInt checksum;
+  List<int> fragment;
+
+  FountainEncoderPart(
+    this.seqNum,
+    this.seqLength,
+    this.messageLength,
+    this.checksum,
+    this.fragment,
+  );
 
 //   get messageLength() { return this._messageLength; }
 //   get fragment() { return this._fragment; }
@@ -21,45 +31,40 @@ class FountainEncoderPart {
 //   get seqLength() { return this._seqLength; }
 //   get checksum() { return this._checksum; }
 
-//   public cbor(): Buffer {
-//     var result = cborEncode([
-//       this._seqNum,
-//       this._seqLength,
-//       this._messageLength,
-//       this._checksum,
-//       this._fragment
-//     ])
+  List<int> cbor() {
+    final result = cborEncode([seqNum, seqLength, messageLength, checksum.toInt(), fragment]);
 
-//     return Buffer.from(result);
-//   }
+    return result;
+  }
 
 //   public description(): string {
 //     return `seqNum:${this._seqNum}, seqLen:${this._seqLength}, messageLen:${this._messageLength}, checksum:${this._checksum}, data:${this._fragment.toString('hex')}`
 //   }
 
-//   public static fromCBOR(cborPayload: string | Buffer) {
-//     var [
-//       seqNum,
-//       seqLength,
-//       messageLength,
-//       checksum,
-//       fragment,
-//     ] = cborDecode(cborPayload);
+  static FountainEncoderPart fromCBOR(String cborPayload) {
+    final decoded = cborDecode(string: cborPayload);
+    if (decoded == null) throw Exception('Invalid CBOR payload');
 
-//     assert(typeof seqNum === 'number');
-//     assert(typeof seqLength === 'number');
-//     assert(typeof messageLength === 'number');
-//     assert(typeof checksum === 'number');
-//     assert(Buffer.isBuffer(fragment) && fragment.length > 0);
+    final seqNum = decoded[0];
+    final seqLength = decoded[1];
+    final messageLength = decoded[2];
+    final checksum = decoded[3];
+    final fragment = decoded[4];
 
-//     return new FountainEncoderPart(
-//       seqNum,
-//       seqLength,
-//       messageLength,
-//       checksum,
-//       Buffer.from(fragment),
-//     )
-//   }
+    // assert(typeof seqNum === 'number');
+    // assert(typeof seqLength === 'number');
+    // assert(typeof messageLength === 'number');
+    // assert(typeof checksum === 'number');
+    // assert(Buffer.isBuffer(fragment) && fragment.length > 0);
+
+    return new FountainEncoderPart(
+      seqNum,
+      seqLength,
+      messageLength,
+      checksum,
+      Buffer.from(fragment as dynamic, 'hex'),
+    );
+  }
 }
 
 class FountainEncoder {
@@ -69,54 +74,52 @@ class FountainEncoder {
   late int seqNum;
   late BigInt checksum;
 
-  FountainEncoder(List<int> message, {int maxFragmentLength = 100, int firstSeqNum = 0, int minFragmentLength = 10}) {
+  FountainEncoder(List<int> message, {int? maxFragmentLength, int? firstSeqNum, int? minFragmentLength}) {
+    maxFragmentLength ??= 100;
+    firstSeqNum ??= 0;
+    minFragmentLength ??= 10;
+
     var fragmentLength =
         FountainEncoder.findNominalFragmentLength(message.length, minFragmentLength, maxFragmentLength);
 
-    this._messageLength = message.length;
-    this._fragments = FountainEncoder.partitionMessage(message, fragmentLength);
-    this.fragmentLength = fragmentLength;
-    this.seqNum = toUint32(firstSeqNum);
-    this.checksum = getCRC(message);
+    _messageLength = message.length;
+    _fragments = FountainEncoder.partitionMessage(message, fragmentLength);
+    fragmentLength = fragmentLength;
+    seqNum = toUint32(firstSeqNum);
+    checksum = getCRC(message);
   }
 
 //   public get fragmentsLength() { return this._fragments.length; }
 //   public get fragments() { return this._fragments; }
 //   public get messageLength() { return this._messageLength; }
 
-//   public isComplete(): boolean {
-//     return this.seqNum >= this._fragments.length;
-//   }
+  bool isComplete() {
+    return this.seqNum >= this._fragments.length;
+  }
 
-//   public isSinglePart(): boolean {
-//     return this._fragments.length === 1;
-//   }
+  bool isSinglePart() {
+    return this._fragments.length == 1;
+  }
 
-//   public seqLength(): number {
-//     return this._fragments.length;
-//   }
+  int seqLength() {
+    return this._fragments.length;
+  }
 
-//   public mix(indexes: number[]) {
-//     return indexes.reduce(
-//       (result, index) => bufferXOR(this._fragments[index], result),
-//       Buffer.alloc(this.fragmentLength, 0)
-//     )
-//   }
+  mix(List<int> indexes) {
+    return indexes.fold(
+      List<int>.filled(_fragments.length, 0),
+      (List<int> result, index) => bufferXOR(_fragments[index], result),
+    );
+  }
 
-  // FountainEncoderPart nextPart() {
-  //   this.seqNum = toUint32(this.seqNum + 1);
+  FountainEncoderPart nextPart() {
+    seqNum = toUint32(seqNum + 1);
 
-  //   var indexes = chooseFragments(this.seqNum, this._fragments.length, this.checksum);
-  //   var mixed = this.mix(indexes);
+    var indexes = chooseFragments(seqNum, _fragments.length, checksum.toInt()); // TODO this might fail?
+    var mixed = mix(indexes);
 
-  //   return new FountainEncoderPart(
-  //     this.seqNum,
-  //     this._fragments.length,
-  //     this._messageLength,
-  //     this.checksum,
-  //     mixed
-  //   )
-  // }
+    return FountainEncoderPart(this.seqNum, this._fragments.length, this._messageLength, this.checksum, mixed);
+  }
 
   static int findNominalFragmentLength(int messageLength, int minFragmentLength, int maxFragmentLength) {
     assert(messageLength > 0);
@@ -139,18 +142,14 @@ class FountainEncoder {
 
   static List<List<int>> partitionMessage(List<int> message, int fragmentLength) {
     var remaining = [...message];
-    var fragment;
     List<List<int>> _fragments = [];
 
     while (remaining.isNotEmpty) {
       var result = split(remaining, -fragmentLength);
-      fragment = result[0];
+      var fragment = result[0];
       remaining = result[1];
 
-      var tmp = List<int>.generate(fragmentLength, (index) => 0);
-      tmp.fillRange(0, fragment.length, fragment);
-      //  .alloc(fragmentLength, 0) // initialize with 0's to achieve the padding
-      //.fill(fragment, 0, fragment.length)
+      fragment = List<int>.generate(fragmentLength, (index) => index < fragment.length ? fragment[index] : 0);
 
       _fragments.add(fragment);
     }

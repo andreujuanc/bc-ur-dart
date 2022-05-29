@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bc_ur/src/jsport.dart';
@@ -19,8 +20,15 @@ List<String> partition(String s, int n) {
   return matches.map((e) => e.group(0) ?? s).toList();
 }
 
-List<List<int>> split(List<int> s, int length) =>
-    [s.sublist(0, s.length - length), s.sublist(s.length - length, s.length)];
+List<List<int>> split(List<int> s, int length) {
+  // [s.sublist(0, s.length - length), s.sublist(s.length - length, s.length)];
+  final fromTheEnd = length >= 0;
+  length = fromTheEnd ? min(length, s.length) : min(-length, s.length);
+  return [
+    fromTheEnd ? s.sublist(0, s.length - length) : s.sublist(0, length),
+    fromTheEnd ? s.sublist(s.length - length, s.length) : s.sublist(length),
+  ];
+}
 
 BigInt getCRC(List<int> message) => Crc32Xz().convert(message).toBigInt(); //crc32(message);
 
@@ -53,38 +61,39 @@ bool isURType(String type) {
 
 // export 'utils'const hasPrefix = (s: string, prefix: string): boolean => s.indexOf(prefix) === 0;
 
-// export 'utils'const arraysEqual = (ar1: any[], ar2: any[]): boolean => {
-//   if (ar1.length !== ar2.length) {
-//     return false;
-//   }
+bool arraysEqual<T>(List<T> ar1, List<T> ar2) {
+  if (ar1.length != ar2.length) {
+    return false;
+  }
 
-//   return ar1.every(el => ar2.includes(el))
-// }
+  return ar1.every((el) => ar2.contains(el));
+}
 
-// /**
-//  * Checks if ar1 contains all elements of ar2
-//  * @param ar1 the outer array
-//  * @param ar2 the array to be contained in ar1
-//  */
-// export 'utils'const arrayContains = (ar1: any[], ar2: any[]): boolean => {
-//   return ar2.every(v => ar1.includes(v))
-// }
+/// /**
+///  * Checks if ar1 contains all elements of ar2
+///  * @param ar1 the outer array
+///  * @param ar2 the array to be contained in ar1
+///  */
+bool arrayContains(List ar1, List ar2) {
+  return ar2.every((v) => ar1.contains(v));
+}
 
-// /**
-//  * Returns the difference array of  `ar1` - `ar2`
-//  */
-// export 'utils'const setDifference = (ar1: any[], ar2: any[]): any[] => {
-//   return ar1.filter(x => ar2.indexOf(x) < 0)
-// }
+/// /**
+///  * Returns the difference array of  `ar1` - `ar2`
+///  */
+List<T> setDifference<T>(List<T> ar1, List<T> ar2) {
+  return ar1.where((x) => !ar2.contains(x)).toList();
+}
 
-// export 'utils'const bufferXOR = (a: Buffer, b: Buffer): Buffer => {
-//   const length = Math.max(a.length, b.length);
-//   const buffer = Buffer.allocUnsafe(length);
+List<int> bufferXOR(List<int> a, List<int> b) {
+  final length = max(a.length, b.length);
+  final buffer = List<int>.filled(length, 0);
 
-//   for (let i = 0; i < length; ++i) {
-//     buffer[i] = a[i] ^ b[i];
-//   }
+  for (var i = 0; i < length; ++i) {
+    buffer[i] = a[i] ^ b[i];
+  }
 
-//   return buffer;
-// }
+  return buffer;
+}
+
 x(RegExpMatch e) {}

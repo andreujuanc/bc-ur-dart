@@ -1,13 +1,7 @@
-// import FountainDecoder from './fountainDecoder';
-// import bytewords from './bytewords';
-// import assert from 'assert';
-// import { isURType, toUint32 } from './utils';
-// import { InvalidSchemeError, InvalidPathLengthError, InvalidTypeError, InvalidSequenceComponentError } from './errors';
-// import UR from './ur';
-// import { FountainEncoderPart } from './fountainEncoder';
-
 import 'package:bc_ur/src/bytewords.dart';
+import 'package:bc_ur/src/errors.dart';
 import 'package:bc_ur/src/fountainDecoder.dart';
+import 'package:bc_ur/src/fountainEncoder.dart';
 import 'package:bc_ur/src/jsport.dart';
 import 'package:bc_ur/src/ur.dart';
 import 'package:bc_ur/src/utils.dart';
@@ -17,7 +11,7 @@ class URDecoder {
   UR? result;
   late String type;
   late FountainDecoder fountainDecoder;
-  //Exception?: error;
+  ExceptionBase? error;
 
   URDecoder(FountainDecoder? _fountainDecoder, String? _type) {
     fountainDecoder = _fountainDecoder ?? FountainDecoder();
@@ -33,27 +27,27 @@ class URDecoder {
     return UR(Buffer.from(cbor, 'hex'), type);
   }
 
-  // private validatePart(type: string): boolean {
-  //   if (this.expected_type) {
-  //     return this.expected_type === type;
-  //   }
+  bool validatePart(String type) {
+    if (expected_type.isNotEmpty) {
+      return expected_type == type;
+    }
 
-  //   if (!isURType(type)) {
-  //     return false;
-  //   }
+    if (!isURType(type)) {
+      return false;
+    }
 
-  //   this.expected_type = type;
+    expected_type = type;
 
-  //   return true;
-  // }
+    return true;
+  }
 
   static UR decode(String message) {
-    // const [type, components] = this.parse(message);
+    // const [type, components] = parse(message);
     final parsed = parse(message);
     final type = parsed[0] as String;
     final components = parsed[1] as List<String>;
     if (components.isEmpty) {
-      throw 'InvalidPathLengthError';
+      throw InvalidPathLengthError();
     }
 
     final body = components[0];
@@ -62,19 +56,19 @@ class URDecoder {
   }
 
   /** @returns [string, string[]] */
-  static List parse(String message)  {
+  static List parse(String message) {
     final lowercase = message.toLowerCase();
     final prefix = lowercase.substring(0, 3);
 
     if (prefix != 'ur:') {
-      throw 'InvalidSchemeError';
+      throw InvalidSchemeError();
     }
 
     final components = lowercase.substring(3).split('/');
     final type = components[0];
 
     if (components.length < 2) {
-      throw 'InvalidPathLengthError';
+      throw InvalidPathLengthError();
     }
 
     if (!isURType(type)) {
@@ -84,109 +78,116 @@ class URDecoder {
     return [type, components.sublist(1)];
   }
 
-  // public static parseSequenceComponent(s: string) {
-  //   const components = s.split('-');
+  /// @returns [int, int]
+  static List<int> parseSequenceComponent(String s) {
+    final components = s.split('-');
 
-  //   if (components.length !== 2) {
-  //     throw new InvalidSequenceComponentError();
-  //   }
+    if (components.length != 2) {
+      throw InvalidSequenceComponentError();
+    }
 
-  //   const seqNum = toUint32(Number(components[0]));
-  //   const seqLength = Number(components[1]);
+    final seqNum = toUint32(int.parse(components[0]));
+    final seqLength = int.parse(components[1]);
 
-  //   if (seqNum < 1 || seqLength < 1) {
-  //     throw new InvalidSequenceComponentError();
-  //   }
+    if (seqNum < 1 || seqLength < 1) {
+      throw InvalidSequenceComponentError();
+    }
 
-  //   return [seqNum, seqLength];
-  // }
+    return [seqNum, seqLength];
+  }
 
-  // public receivePart(s: string): boolean {
-  //   if (this.result !== undefined) {
-  //     return false;
-  //   }
+  bool receivePart(String s) {
+    if (result != null) {
+      return false;
+    }
 
-  //   const [type, components] = URDecoder.parse(s)
+    final parsed = URDecoder.parse(s);
+    final type = parsed[0] as String;
+    final components = parsed[1] as List<String>;
 
-  //   if (!this.validatePart(type)) {
-  //     return false;
-  //   }
+    if (!validatePart(type)) {
+      return false;
+    }
 
-  //   // If this is a single-part UR then we're done
-  //   if (components.length === 1) {
-  //     this.result = URDecoder.decodeBody(type, components[0])
+    // If this is a single-part UR then we're done
+    if (components.length == 1) {
+      result = URDecoder.decodeBody(type, components[0]);
 
-  //     return true;
-  //   }
+      return true;
+    }
 
-  //   if (components.length !== 2) {
-  //     throw new InvalidPathLengthError();
-  //   }
+    if (components.length != 2) {
+      throw InvalidPathLengthError();
+    }
 
-  //   const [seq, fragment] = components;
-  //   const [seqNum, seqLength] = URDecoder.parseSequenceComponent(seq);
-  //   const cbor = bytewords.decode(fragment, bytewords.STYLES.MINIMAL);
-  //   const part = FountainEncoderPart.fromCBOR(cbor);
+    final seq = components[0];
+    final fragment = components[1];
 
-  //   if (seqNum !== part.seqNum || seqLength !== part.seqLength) {
-  //     return false;
-  //   }
+    final parsedSequence = URDecoder.parseSequenceComponent(seq);
+    final seqNum = parsedSequence[0];
+    final seqLength = parsedSequence[1];
 
-  //   if (!this.fountainDecoder.receivePart(part)) {
-  //     return false;
-  //   }
+    final cbor = Bytewords.decode(fragment, BYTEWORD_STYLES.MINIMAL);
+    final part = FountainEncoderPart.fromCBOR(cbor);
 
-  //   if (this.fountainDecoder.isSuccess()) {
-  //     this.result = new UR(this.fountainDecoder.resultMessage(), type);
-  //   }
-  //   else if (this.fountainDecoder.isFailure()) {
-  //     this.error = new InvalidSchemeError();
-  //   }
+    if (seqNum != part.seqNum || seqLength != part.seqLength) {
+      return false;
+    }
 
-  //   return true;
-  // }
+    if (!fountainDecoder.receivePart(part)) {
+      return false;
+    }
 
-  // public resultUR(): UR {
-  //   return this.result ? this.result : new UR(Buffer.from([]));
-  // }
+    if (fountainDecoder.isSuccess()) {
+      result = UR(fountainDecoder.resultMessage(), type);
+    } else if (fountainDecoder.isFailure()) {
+      error = InvalidSchemeError();
+    }
 
-  // public isComplete(): boolean {
-  //   return this.result && this.result.cbor.length > 0;
-  // }
+    return true;
+  }
 
-  // public isSuccess(): boolean {
-  //   return !this.error && this.isComplete();
-  // }
+  UR resultUR() {
+    return result != null ? result! : UR([], 'bytes');
+  }
+
+  bool isComplete() {
+    return result != null && result!.cbor.isNotEmpty;
+  }
+
+  bool isSuccess() {
+    return error != null && isComplete();
+  }
 
   // public isError(): boolean {
-  //   return this.error !== undefined;
+  //   return error !== undefined;
   // }
 
-  // public resultError() {
-  //   return this.error ? this.error.message : '';
-  // }
+  resultError() {
+    return error != null ? error!.message : '';
+  }
 
   // public expectedPartCount() {
-  //   return this.fountainDecoder.expectedPartCount();
+  //   return fountainDecoder.expectedPartCount();
   // }
 
   // public expectedPartIndexes() {
-  //   return this.fountainDecoder.getExpectedPartIndexes();
+  //   return fountainDecoder.getExpectedPartIndexes();
   // }
 
   // public receivedPartIndexes() {
-  //   return this.fountainDecoder.getReceivedPartIndexes();
+  //   return fountainDecoder.getReceivedPartIndexes();
   // }
 
   // public lastPartIndexes() {
-  //   return this.fountainDecoder.getLastPartIndexes();
+  //   return fountainDecoder.getLastPartIndexes();
   // }
 
   // public estimatedPercentComplete() {
-  //   return this.fountainDecoder.estimatedPercentComplete();
+  //   return fountainDecoder.estimatedPercentComplete();
   // }
 
   // public getProgress() {
-  //   return this.fountainDecoder.getProgress();
+  //   return fountainDecoder.getProgress();
   // }
 }

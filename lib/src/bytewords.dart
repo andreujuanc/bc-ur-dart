@@ -121,7 +121,7 @@ class Bytewords {
         'Invalid Bytewords: invalid decoded string length');
 
     //var [body, bodyChecksum] = split(Buffer.from(decodedString, 'hex'), 4)
-    var splitResult = split(hex.decode(decodedString), 4);
+    var splitResult = split(hex.decode(decodedString), 4); // TODO: check this because i changed the implementation, i think it does not work for both usages
     var body = splitResult[0];
     var bodyChecksum = splitResult[1];
 

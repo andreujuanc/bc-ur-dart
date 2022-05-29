@@ -5,23 +5,20 @@ import 'package:cbor/cbor.dart';
 import 'package:convert/convert.dart';
 import 'package:typed_data/typed_data.dart';
 
-List<int> cborEncode(Uint8List data) {
+List<int> cborEncode(dynamic data) {
   final buff = cbor.encode(CborValue(data));
   return buff;
 }
 
-Object? cborDecode({List<int>? buffer, String? string}) {
-  // final codec = cbor.Cbor();
+dynamic? cborDecode({List<int>? buffer, String? string}) {
+  Uint8Buffer b2;
+  
+  if (buffer != null) {
+    b2 = Uint8Buffer()..addAll(buffer);
+  } else if (string != null) {
+    b2 = Uint8Buffer()..addAll(Buffer.from(string, 'hex'));
+  } else
+    throw Exception('Either buffer or string must be provided');
 
-  // if (buffer != null) {
-  //   var b2 = Uint8Buffer()..addAll(buffer);
-  //   final decoder = codec.decodeFromBuffer(b2);
-  //   final list = codec.getDecodedData()!;
-  //   return list;
-  // } else if (string != null) {
-  //   var b2 = Uint8Buffer()..addAll(Buffer.from(string, 'hex'));
-  //   final decoder = codec.decodeFromBuffer(b2);
-  //   final list = codec.getDecodedData()!;
-  // }
-  throw Exception('Either buffer or string must be provided');
+  return cbor.decode(b2).toObject();
 }

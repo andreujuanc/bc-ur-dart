@@ -1,31 +1,34 @@
-// export class InvalidSchemeError extends Error {
-//   constructor() {
-//     super('Invalid Scheme');
-//     this.name = 'InvalidSchemeError'
-//   }
-// }
-
-// export class InvalidPathLengthError extends Error {
-//   constructor() {
-//     super('Invalid Path');
-//     this.name = 'InvalidPathLengthError'
-//   }
-// }
-
-class InvalidTypeError implements Exception {
-  String name = 'InvalidTypeError';
+abstract class ExceptionBase {
+  final String message;
+  ExceptionBase(this.message);
 }
 
-// export class InvalidSequenceComponentError extends Error {
-//   constructor() {
-//     super('Invalid Sequence Component');
-//     this.name = 'InvalidSequenceComponentError'
-//   }
-// }
+class InvalidSchemeError implements ExceptionBase {
+  String name = 'InvalidSchemeError';
+  @override
+  final String message = 'Invalid Scheme';
+}
 
-// export class InvalidChecksumError extends Error {
-//   constructor() {
-//     super('Invalid Checksum');
-//     this.name = 'InvalidChecksumError'
-//   }
-// }
+class InvalidPathLengthError implements ExceptionBase {
+  String name = 'InvalidPathLengthError';
+  @override
+  final String message = 'Invalid Path';
+}
+
+class InvalidTypeError implements ExceptionBase {
+  String name = 'InvalidTypeError';
+  @override
+  final String message = 'Invalid Type';
+}
+
+class InvalidSequenceComponentError implements ExceptionBase {
+  String name = 'InvalidSequenceComponentError';
+  @override
+  final String message = 'Invalid Sequence Component';
+}
+
+class InvalidChecksumError implements ExceptionBase {
+  String name = 'InvalidChecksumError';
+  @override
+  final String message = 'Invalid Checksum';
+}
