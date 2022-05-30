@@ -49,7 +49,7 @@ class FountainEncoderPart {
     final seqLength = decoded[1];
     final messageLength = decoded[2];
     final checksum = decoded[3];
-    final fragment = decoded[4];
+    final fragment = decoded[4] as List<Object?>;
 
     // assert(typeof seqNum === 'number');
     // assert(typeof seqLength === 'number');
@@ -57,12 +57,12 @@ class FountainEncoderPart {
     // assert(typeof checksum === 'number');
     // assert(Buffer.isBuffer(fragment) && fragment.length > 0);
 
-    return new FountainEncoderPart(
+    return FountainEncoderPart(
       seqNum,
       seqLength,
       messageLength,
-      checksum,
-      Buffer.from(fragment as dynamic, 'hex'),
+      BigInt.from(checksum),
+      fragment.map((e) => e as int).toList(),
     );
   }
 }
@@ -79,12 +79,12 @@ class FountainEncoder {
     firstSeqNum ??= 0;
     minFragmentLength ??= 10;
 
-    var fragmentLength =
+    var _fragmentLength =
         FountainEncoder.findNominalFragmentLength(message.length, minFragmentLength, maxFragmentLength);
 
     _messageLength = message.length;
-    _fragments = FountainEncoder.partitionMessage(message, fragmentLength);
-    fragmentLength = fragmentLength;
+    _fragments = FountainEncoder.partitionMessage(message, _fragmentLength);
+    fragmentLength = _fragmentLength;
     seqNum = toUint32(firstSeqNum);
     checksum = getCRC(message);
   }
@@ -107,7 +107,7 @@ class FountainEncoder {
 
   mix(List<int> indexes) {
     return indexes.fold(
-      List<int>.filled(_fragments.length, 0),
+      List<int>.filled(fragmentLength, 0),
       (List<int> result, index) => bufferXOR(_fragments[index], result),
     );
   }

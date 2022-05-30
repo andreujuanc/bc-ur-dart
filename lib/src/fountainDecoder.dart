@@ -195,7 +195,6 @@ class FountainDecoder {
     while (!isComplete() && queuedParts.length > 0) {
       processQueuedItem();
     }
-    ;
 
     processedPartsCount += 1;
 

@@ -5,7 +5,7 @@ import 'package:bc_ur/src/xoshiro.dart';
 int chooseDegree(int seqLenth, Xoshiro rng) {
   final degreeProbabilities = List<double>.generate(
       seqLenth, (index) => 1 / (index + 1)); //[...new Array(seqLenth)].map((_, index) => 1 / (index + 1));
-  final degreeChooser = Sample(degreeProbabilities, null, rng.nextDouble);
+  final degreeChooser = Sample(degreeProbabilities, null, () => rng.nextDouble().toDouble());
 
   return degreeChooser.next(null) + 1;
 }
@@ -18,7 +18,7 @@ List<T> shuffle<T>(List items, Xoshiro rng) {
     final index = rng.nextInt(0, remaining.length - 1);
     final item = remaining[index];
     // remaining.erase(remaining.begin() + index);
-    remaining.removeRange(index, 1); //remaining.splice(index, 1);
+    remaining.removeRange(index, index + 1); //remaining.splice(index, 1);
     result.add(item);
   }
 
