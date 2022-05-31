@@ -11,12 +11,12 @@ List<int> cborEncode(dynamic data) {
 }
 
 dynamic? cborDecode({List<int>? buffer, String? string}) {
-  Uint8Buffer b2;
+  Uint8List  b2;
   
   if (buffer != null) {
-    b2 = Uint8Buffer()..addAll(buffer);
+    b2 = Uint8List.fromList(buffer);
   } else if (string != null) {
-    b2 = Uint8Buffer()..addAll(Buffer.from(string, 'hex'));
+    b2 = Uint8List.fromList(Buffer.from(string, 'hex'));
   } else
     throw Exception('Either buffer or string must be provided');
 

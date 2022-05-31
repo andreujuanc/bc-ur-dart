@@ -85,7 +85,7 @@ List<T> setDifference<T>(List<T> ar1, List<T> ar2) {
   return ar1.where((x) => !ar2.contains(x)).toList();
 }
 
-List<int> bufferXOR(List<int> a, List<int> b) {
+Uint8List bufferXOR(List<int> a, List<int> b) {
   final length = max(a.length, b.length);
   final buffer = List<int>.filled(length, 0);
 
@@ -93,7 +93,7 @@ List<int> bufferXOR(List<int> a, List<int> b) {
     buffer[i] = a[i] ^ b[i];
   }
 
-  return buffer;
+  return Uint8List.fromList(buffer);
 }
 
 x(RegExpMatch e) {}

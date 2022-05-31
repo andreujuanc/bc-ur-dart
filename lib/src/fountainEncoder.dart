@@ -9,13 +9,14 @@ import 'package:bc_ur/src/cbor.dart';
 import 'package:bc_ur/src/fountainUtils.dart';
 import 'package:bc_ur/src/jsport.dart';
 import 'package:bc_ur/src/utils.dart';
+import 'package:typed_data/typed_data.dart';
 
 class FountainEncoderPart {
   int seqNum;
   int seqLength;
   int messageLength;
   BigInt checksum;
-  List<int> fragment;
+  Uint8List fragment;
 
   FountainEncoderPart(
     this.seqNum,
@@ -62,14 +63,14 @@ class FountainEncoderPart {
       seqLength,
       messageLength,
       BigInt.from(checksum),
-      fragment.map((e) => e as int).toList(),
+      (BytesBuilder()..add(fragment.map((e) => e as int).toList())).toBytes(),
     );
   }
 }
 
 class FountainEncoder {
   late int _messageLength;
-  late List<List<int>> _fragments;
+  late List<Uint8List> _fragments;
   late int fragmentLength;
   late int seqNum;
   late BigInt checksum;
@@ -105,10 +106,12 @@ class FountainEncoder {
     return this._fragments.length;
   }
 
-  mix(List<int> indexes) {
-    return indexes.fold(
-      List<int>.filled(fragmentLength, 0),
-      (List<int> result, index) => bufferXOR(_fragments[index], result),
+  Uint8List mix(List<int> indexes) {
+    return Uint8List.fromList(
+      indexes.fold(
+        List<int>.filled(fragmentLength, 0),
+        (List<int> result, index) => bufferXOR(_fragments[index], result),
+      ),
     );
   }
 
@@ -140,16 +143,18 @@ class FountainEncoder {
     return fragmentLength;
   }
 
-  static List<List<int>> partitionMessage(List<int> message, int fragmentLength) {
+  static List<Uint8List> partitionMessage(List<int> message, int fragmentLength) {
     var remaining = [...message];
-    List<List<int>> _fragments = [];
+    List<Uint8List> _fragments = [];
 
     while (remaining.isNotEmpty) {
       var result = split(remaining, -fragmentLength);
-      var fragment = result[0];
+      var splitFragment = result[0];
       remaining = result[1];
 
-      fragment = List<int>.generate(fragmentLength, (index) => index < fragment.length ? fragment[index] : 0);
+      var fragment = Uint8List.fromList(
+        List<int>.generate(fragmentLength, (index) => index < splitFragment.length ? splitFragment[index] : 0),
+      );
 
       _fragments.add(fragment);
     }

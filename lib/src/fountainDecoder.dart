@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:bc_ur/src/errors.dart';
 import 'package:bc_ur/src/fountainEncoder.dart';
 import 'package:bc_ur/src/fountainUtils.dart';
@@ -5,11 +7,11 @@ import 'package:bc_ur/src/utils.dart';
 
 class FountainDecoderPart {
   final List<int> _indexes;
-  final List<int> _fragment;
+  final Uint8List _fragment;
   FountainDecoderPart(this._indexes, this._fragment);
 
   List<int> get indexes => _indexes;
-  List<int> get fragment => _fragment;
+  Uint8List get fragment => _fragment;
 
   static FountainDecoderPart fromEncoderPart(FountainEncoderPart encoderPart) {
     final indexes = chooseFragments(encoderPart.seqNum, encoderPart.seqLength, encoderPart.checksum.toInt());
@@ -174,8 +176,8 @@ class FountainDecoder {
     }
   }
 
-  static joinFragments(List<List<int>> fragments, int messageLength) {
-    return fragments.sublist(0, messageLength);
+  static joinFragments(List<Uint8List> fragments, int messageLength) {
+    return Uint8List.fromList(fragments.expand((Uint8List e) => e).toList()).sublist(0, messageLength);
   }
 
   bool receivePart(FountainEncoderPart encoderPart) {

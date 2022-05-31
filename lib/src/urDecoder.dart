@@ -156,7 +156,7 @@ class URDecoder {
   }
 
   bool isSuccess() {
-    return error != null && isComplete();
+    return error == null && isComplete();
   }
 
   // public isError(): boolean {
